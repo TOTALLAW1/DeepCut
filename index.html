@@ -113,7 +113,36 @@
 [data-theme="lain"] .q-slider::-webkit-slider-thumb { background: #39ff14; box-shadow: 0 0 0 2px #39ff14; }
 [data-theme="lain"] .cover-badge { color: #39ff14; border-color: rgba(57,255,20,.3); }
 
-/* ── THEME DROPDOWN ── */
+/* ── GLOBAL STICKY HEADER ── */
+.global-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background .3s;
+}
+
+.global-header .back-btn {
+  background: var(--surface);
+  border: 1.5px solid var(--accent);
+  border-radius: 8px;
+  padding: 7px 14px;
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background .2s;
+}
+.global-header .back-btn:active { background: var(--surface2); }
 .theme-picker {
   position: relative;
 }
@@ -547,9 +576,18 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
 <!-- EMAIL PROMPT (for returning users) -->
 <div id="screen-email-prompt" class="screen">
-  <div style="padding:32px 24px 0;display:flex;align-items:center;justify-content:space-between">
-    <div class="logo">Deep <span>Cut</span></div>
-    <button onclick="showScreen('screen-welcome')" style="font-size:13px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:'Syne',sans-serif">← Back</button>
+  <div class="global-header">
+    <button class="back-btn" onclick="showScreen('screen-welcome')">← Back</button>
+    <div class="theme-picker">
+      <button class="theme-btn" onclick="toggleThemeDropdown()">
+        <div class="theme-swatch" id="current-swatch-prompt" style="background:#e8ff47"></div>▾
+      </button>
+      <div class="theme-dropdown" id="theme-dropdown-prompt">
+        <div class="theme-option active" onclick="setTheme('default')"><div class="theme-option-swatch" style="background:linear-gradient(135deg,#0a0a0a 50%,#e8ff47 50%)"></div><div><div class="theme-option-name">Serial Experiments Lain</div></div></div>
+        <div class="theme-option" onclick="setTheme('lain')"><div class="theme-option-swatch" style="background:linear-gradient(135deg,#030a03 50%,#39ff14 50%)"></div><div><div class="theme-option-name">Lain Deep</div></div></div>
+        <div class="theme-option" onclick="setTheme('yandere')"><div class="theme-option-swatch" style="background:linear-gradient(135deg,#fff0f5 50%,#ff0044 50%)"></div><div><div class="theme-option-name">Yandere</div></div></div>
+      </div>
+    </div>
   </div>
   <div style="flex:1;padding:48px 24px;display:flex;flex-direction:column;justify-content:center">
     <div style="font-family:'Syne Mono',monospace;font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:20px" id="email-prompt-eyebrow">Returning</div>
@@ -564,8 +602,18 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 
 <!-- INTAKE -->
 <div id="screen-intake" class="screen">
-  <div style="padding:28px 24px 0;display:flex;align-items:center;justify-content:space-between">
+  <div class="global-header">
     <div class="logo">Deep <span>Cut</span></div>
+    <div class="theme-picker">
+      <button class="theme-btn" onclick="toggleThemeDropdown()">
+        <div class="theme-swatch" id="current-swatch-intake" style="background:#e8ff47"></div>▾
+      </button>
+      <div class="theme-dropdown" id="theme-dropdown-intake">
+        <div class="theme-option active" onclick="setTheme('default')"><div class="theme-option-swatch" style="background:linear-gradient(135deg,#0a0a0a 50%,#e8ff47 50%)"></div><div><div class="theme-option-name">Serial Experiments Lain</div><div class="theme-option-sub">Default</div></div></div>
+        <div class="theme-option" onclick="setTheme('lain')"><div class="theme-option-swatch" style="background:linear-gradient(135deg,#030a03 50%,#39ff14 50%)"></div><div><div class="theme-option-name">Lain Deep</div><div class="theme-option-sub">Neon green · Void black</div></div></div>
+        <div class="theme-option" onclick="setTheme('yandere')"><div class="theme-option-swatch" style="background:linear-gradient(135deg,#fff0f5 50%,#ff0044 50%)"></div><div><div class="theme-option-name">Yandere</div><div class="theme-option-sub">Pastel pink · Crimson</div></div></div>
+      </div>
+    </div>
   </div>
   <div style="padding:32px 24px;flex:1;overflow-y:auto">
     <h2 style="font-size:26px;font-weight:800;line-height:1.15;letter-spacing:-.02em;margin-bottom:8px">Before we start —<br>a few quick things.</h2>
@@ -861,7 +909,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <div class="toast" id="toast"></div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwUgwAdxyigzDZTAUQ4M1sV6dkKvL6wgY0-3aVIGybK2yp1yM-K3RQuO2TxHAvMS9mX/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby5cAAfJFF0rLAPtbJ15rqcR4o6x0fyOJBjacrJcLCAsasZXL--iAA2lLdu3Y5fUJJU/exec';
 
 // ── STATE ────────────────────────────────────────────────────
 let S = {
@@ -948,46 +996,48 @@ const QS = [
 
 // ── THEMES ───────────────────────────────────────────────────
 const THEMES = {
-  default: { name: 'Lain',    swatch: '#e8ff47', attr: '' },
+  default: { name: 'Lain',      swatch: '#e8ff47', attr: '' },
   lain:    { name: 'Lain Deep', swatch: '#39ff14', attr: 'lain' },
-  yandere: { name: 'Yandere', swatch: '#ff0044', attr: 'yandere' }
+  yandere: { name: 'Yandere',   swatch: '#ff0044', attr: 'yandere' }
 };
 
 function setTheme(key) {
   const t = THEMES[key] || THEMES.default;
   document.documentElement.setAttribute('data-theme', t.attr);
-  document.getElementById('current-swatch').style.background = t.swatch;
-  document.getElementById('current-theme-name').textContent = t.name;
-  // Mark active
+  // Sync all swatches
+  document.querySelectorAll('[id^="current-swatch"]').forEach(el => el.style.background = t.swatch);
+  document.querySelectorAll('#current-theme-name').forEach(el => el.textContent = t.name);
+  // Mark active in all dropdowns
   document.querySelectorAll('.theme-option').forEach(el => el.classList.remove('active'));
-  const activeEl = document.getElementById(`theme-opt-${key}`);
-  if (activeEl) activeEl.classList.add('active');
-  // Persist
+  document.querySelectorAll(`[id="theme-opt-${key}"]`).forEach(el => el.classList.add('active'));
   localStorage.setItem('deepcut-theme', key);
   closeThemeDropdown();
 }
 
 function toggleThemeDropdown() {
-  document.getElementById('theme-dropdown').classList.toggle('open');
+  // Close all first then open the one inside the clicked picker
+  const allDropdowns = document.querySelectorAll('.theme-dropdown');
+  const anyOpen = [...allDropdowns].some(d => d.classList.contains('open'));
+  allDropdowns.forEach(d => d.classList.remove('open'));
+  if (!anyOpen) {
+    // Find the dropdown inside the same picker as the clicked button
+    event.currentTarget?.closest('.theme-picker')?.querySelector('.theme-dropdown')?.classList.add('open');
+  }
 }
 
 function closeThemeDropdown() {
-  document.getElementById('theme-dropdown').classList.remove('open');
+  document.querySelectorAll('.theme-dropdown').forEach(d => d.classList.remove('open'));
 }
 
-// Close on outside click
 document.addEventListener('click', function(e) {
-  const picker = document.querySelector('.theme-picker');
-  if (picker && !picker.contains(e.target)) closeThemeDropdown();
+  if (!e.target.closest('.theme-picker')) closeThemeDropdown();
 });
 
-// Load saved theme or check URL param
 (function initTheme() {
   const urlParams = new URLSearchParams(window.location.search);
   const urlTheme = urlParams.get('theme');
   const savedTheme = localStorage.getItem('deepcut-theme');
-  const theme = urlTheme || savedTheme || 'default';
-  setTheme(theme);
+  setTheme(urlTheme || savedTheme || 'default');
 })();
 
 // ── SCREEN ───────────────────────────────────────────────────
@@ -1062,36 +1112,29 @@ async function handleWelcomeSubmit(){
   S.firstName=fn; S.lastName=ln; S.email=em;
   S.name=fn+' '+ln;
 
-  // Check if email exists in sheet
-  showToast('Checking...');
+  showToast('One sec...');
   try{
     const res=await fetch(`${SCRIPT_URL}?email=${encodeURIComponent(em)}`);
+    if(!res.ok) throw new Error('Network error');
     const data=await res.json();
     if(data.found){
       if(data.completed){
-        // Load results
-        S.results=data.data;
         S.isComplete=true;
         loadSavedResults(data.data);
+        renderResults();
         showScreen('screen-results');
       } else {
-        // Resume from where they left off
         S.currentQ=Math.max(0,(data.last_answered||0));
-        // Load existing answers
-        for(let i=1;i<=50;i++){
-          if(data.data[`q${i}`]) S.answers[`q${i}`]=data.data[`q${i}`];
-        }
-        showToast(`Welcome back — picking up at question ${S.currentQ+1}`);
-        setTimeout(()=>{
-          renderQuestion();
-          showScreen('screen-question');
-        },800);
+        for(let i=1;i<=50;i++){if(data.data[`q${i}`])S.answers[`q${i}`]=data.data[`q${i}`]}
+        showToast(`Picking up at question ${S.currentQ+1}`);
+        setTimeout(()=>{renderQuestion();showScreen('screen-question')},800);
       }
     } else {
-      // New taker
       showScreen('screen-intake');
     }
   }catch(e){
+    console.error('Welcome fetch error:',e);
+    // On fetch error still allow new taker flow
     showScreen('screen-intake');
   }
 }
@@ -1140,7 +1183,7 @@ async function startQuestions(){
   // Create row in sheet
   try{
     await fetch(SCRIPT_URL,{
-      method:'POST',mode:'no-cors',
+      method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         action:'create_row',
@@ -1235,8 +1278,8 @@ function selectOption(optId){
 
 async function saveAnswerToSheet(qNum,answer){
   try{
-    await fetch(SCRIPT_URL,{
-      method:'POST',mode:'no-cors',
+    fetch(SCRIPT_URL,{
+      method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({action:'save_answer',email:S.email,question_number:qNum,answer})
     });
