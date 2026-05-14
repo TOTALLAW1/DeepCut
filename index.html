@@ -638,7 +638,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <div class="toast" id="toast"></div>
 
 <script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwCBI8sYROU4CXFdGl7RPGltXc_O6-6xRrI94M_IrSP0yijmqyjkLMf5Q0PTCbEVFl8/exec';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby0ozIVfTNDQKwxq7wAo3iA6779f7jhPGBm_bG4n0TsX7jvYHDEbmfk1RPW6O0aR2XL/exec';
 
 // ── STATE ────────────────────────────────────────────────────
 let S = { firstName:'',lastName:'',email:'',intake:{},track:3,answers:{},currentQ:0,isReview:false,isComplete:false,results:{} };
@@ -1099,10 +1099,9 @@ async function startQuestions(){
   const intake=getIntakeData();
   S.intake=intake;S.track=intake.track;S.currentQ=0;
   try{
-    const res=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+    fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({action:'create_row',first_name:S.firstName,last_name:S.lastName,email:S.email,track:S.track,q1_phone:intake.q1,q2_platforms:intake.q2,q3_school:intake.q3,q4_activity:intake.q4,q5_home:intake.q5})});
-    const result=await res.json();
-    console.log('create_row result:',result);
+    console.log('create_row fired');
   }catch(e){console.log('create_row error:',e.message);}
   renderQuestion();showScreen('screen-question');
 }
@@ -1160,7 +1159,7 @@ function selectOption(optId){
   document.querySelectorAll('.q-option').forEach(el=>el.classList.remove('selected'));
   const opt=q.options.find(o=>o.id===optId);
   document.querySelectorAll('.q-option').forEach(el=>{if(el.textContent===opt.text)el.classList.add('selected')});
-  fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+  fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({action:'save_answer',email:S.email,question_number:S.currentQ+1,answer:optId})}).catch(()=>{});
 }
 
@@ -1173,7 +1172,7 @@ async function nextQuestion(){
   const q=QS[S.currentQ];
   if(q.format==='slider'){
     const slEl=document.getElementById('q-slider-input');
-    if(slEl){const v=parseInt(slEl.value);S.answers[q.id]=v;fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'save_answer',email:S.email,question_number:S.currentQ+1,answer:v})}).catch(()=>{});}
+    if(slEl){const v=parseInt(slEl.value);S.answers[q.id]=v;fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'save_answer',email:S.email,question_number:S.currentQ+1,answer:v})}).catch(()=>{});}
     else if(!S.answers[q.id])S.answers[q.id]=3;
   } else {
     if(!S.answers[q.id]){showToast('Pick an answer to continue');return}
@@ -1230,11 +1229,16 @@ async function processResults(){
   const dimLines=Object.entries(dimTypes).map(([d,t])=>`${DC[d].name}: ${typeName(t)}`).join('\n');
   let heading="There's more going on in you than you show.",body='',oneLine='More going on in you than most people see.',whatsNext='';
   try{
-    const res=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'generate_letter',first_name:S.firstName,last_name:S.lastName,
-        grounding_type:typeName(layerTypes.grounding),formation_type:typeName(layerTypes.formation),
-        wiring_type:typeName(layerTypes.wiring),northern_type:typeName(layerTypes.northstar),
-        dimension_types:dimLines})});
+    const params=new URLSearchParams({
+      action:'generate_letter',
+      first_name:S.firstName,last_name:S.lastName,
+      grounding_type:typeName(layerTypes.grounding),
+      formation_type:typeName(layerTypes.formation),
+      wiring_type:typeName(layerTypes.wiring),
+      northern_type:typeName(layerTypes.northstar),
+      dimension_types:dimLines
+    });
+    const res=await fetch(`${SCRIPT_URL}?${params.toString()}`);
     const data=await res.json();
     if(data.success){heading=data.heading||heading;body=data.body||'';oneLine=data.one_line||oneLine;whatsNext=data.whats_next||'';}
     else{body=fallbackLetter();whatsNext=fallbackNext();}
@@ -1243,7 +1247,7 @@ async function processResults(){
   S.results={dimTypes,layerTypes,heading,body,oneLine,whatsNext};
   S.isComplete=true;
   try{
-    await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+    fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({action:'complete',email:S.email,
         grounding_type:typeName(layerTypes.grounding),formation_type:typeName(layerTypes.formation),
         wiring_type:typeName(layerTypes.wiring),northern_type:typeName(layerTypes.northstar),
