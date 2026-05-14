@@ -1033,21 +1033,31 @@ async function handleWelcomeSubmit(){
   if(!ln){showToast('Enter your last name');return}
   if(!em||!em.includes('@')){showToast('Enter a valid email');return}
   S.firstName=fn;S.lastName=ln;S.email=em;S.name=fn+' '+ln;
-  showToast('One sec...');
+
+  // Try to check if returning user — but always proceed regardless
   try{
-    const res=await fetch(`${SCRIPT_URL}?email=${encodeURIComponent(em)}`);
-    if(!res.ok)throw new Error();
-    const data=await res.json();
-    if(data.found){
-      if(data.completed){S.isComplete=true;loadSavedResults(data.data);renderResults();showScreen('screen-results');}
-      else{
-        S.currentQ=Math.max(0,(data.last_answered||0));
-        for(let i=1;i<=50;i++){if(data.data[`q${i}`])S.answers[`q${i}`]=data.data[`q${i}`]}
-        showToast(`Picking up at question ${S.currentQ+1}`);
-        setTimeout(()=>{renderQuestion();showScreen('screen-question')},800);
+    const controller=new AbortController();
+    const timeout=setTimeout(()=>controller.abort(),4000);
+    const res=await fetch(`${SCRIPT_URL}?email=${encodeURIComponent(em)}`,{signal:controller.signal});
+    clearTimeout(timeout);
+    if(res.ok){
+      const data=await res.json();
+      if(data.found){
+        if(data.completed){
+          S.isComplete=true;loadSavedResults(data.data);renderResults();showScreen('screen-results');return;
+        } else {
+          S.currentQ=Math.max(0,(data.last_answered||0));
+          for(let i=1;i<=50;i++){if(data.data[`q${i}`])S.answers[`q${i}`]=data.data[`q${i}`];}
+          showToast(`Picking up at question ${S.currentQ+1}`);
+          setTimeout(()=>{renderQuestion();showScreen('screen-question')},800);return;
+        }
       }
-    } else {showScreen('screen-intake')}
-  }catch(e){showScreen('screen-intake')}
+    }
+  }catch(e){
+    console.log('Email check failed, proceeding as new user:',e.message);
+  }
+  // New user — go to intake
+  showScreen('screen-intake');
 }
 
 // ── INTAKE ───────────────────────────────────────────────────
@@ -1089,9 +1099,11 @@ async function startQuestions(){
   const intake=getIntakeData();
   S.intake=intake;S.track=intake.track;S.currentQ=0;
   try{
-    fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+    const res=await fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({action:'create_row',first_name:S.firstName,last_name:S.lastName,email:S.email,track:S.track,q1_phone:intake.q1,q2_platforms:intake.q2,q3_school:intake.q3,q4_activity:intake.q4,q5_home:intake.q5})});
-  }catch(e){}
+    const result=await res.json();
+    console.log('create_row result:',result);
+  }catch(e){console.log('create_row error:',e.message);}
   renderQuestion();showScreen('screen-question');
 }
 
