@@ -120,14 +120,8 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 .lc-card-face{font-size:14px;color:var(--muted);line-height:1.6;font-style:italic}
 .lc-read-more{display:inline-flex;align-items:center;gap:6px;margin-top:14px;font-family:'Syne Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);border:none;background:none;cursor:pointer;padding:0}
 .lc-tap-hint{position:absolute;top:20px;right:20px;font-size:18px;opacity:.3}
-.mirror-cards{display:flex;flex-direction:column;gap:12px}
-.m-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:20px;border-left:3px solid var(--border);cursor:pointer;transition:background .2s}.m-card:active{background:var(--surface)}
-.m-card.dim-grounding{border-left-color:#ff6b35}.m-card.dim-formation{border-left-color:#47d4ff}.m-card.dim-wiring{border-left-color:#47ff9a}.m-card.dim-northstar{border-left-color:#d4a8ff}
-.m-type{font-family:'Syne Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;margin-bottom:6px}
-.m-title{font-size:16px;font-weight:700;margin-bottom:6px;line-height:1.3;color:var(--text)}
-.m-face{font-size:13px;line-height:1.6;color:var(--muted);font-style:italic}
-.m-read-more{font-family:'Syne Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);border:none;background:none;cursor:pointer;padding:0;margin-top:10px;display:block}
-.opt-in-box{margin:0 24px 32px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px}
+
+ .opt-in-box{margin:0 24px 32px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px}
 .opt-in-label{font-family:'Syne Mono',monospace;font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
 .opt-in-text{font-size:15px;font-weight:600;margin-bottom:6px;line-height:1.4}
 .opt-in-sub{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6}
@@ -190,8 +184,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
   .dear-name{color:#111!important;font-size:28pt;margin-bottom:20px}.dear-body p{color:#222!important;font-size:11pt;line-height:1.7}
   .layer-card-full{background:#fafafa!important;border:1px solid #ddd!important;border-left:4px solid #999!important;break-inside:avoid;margin-bottom:12px;page-break-inside:avoid}
   .lc-layer-label,.lc-you-are{color:#888!important}.lc-type-name{color:#111!important;font-size:18pt;font-family:'Georgia',serif}.lc-card-face{color:#444!important}
-  .m-card{background:#fafafa!important;border:1px solid #ddd!important;break-inside:avoid;margin-bottom:8px;page-break-inside:avoid}.m-type{color:#888!important}.m-title{color:#111!important}.m-face{color:#444!important}
-  .results-closing{background:#fff!important;border-top:1px solid #ddd!important;padding:24px 0}.closing-quote{color:#111!important;font-size:14pt}.closing-sub{color:#555!important}.closing-mark{color:#888!important}.closing-mark span{color:#111!important}
+   .results-closing{background:#fff!important;border-top:1px solid #ddd!important;padding:24px 0}.closing-quote{color:#111!important;font-size:14pt}.closing-sub{color:#555!important}.closing-mark{color:#888!important}.closing-mark span{color:#111!important}
 }
 </style>
 </head>
@@ -415,11 +408,7 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
       <p class="r-sub">Tap any layer to understand what it means and why yours matters.</p>
       <div class="layer-cards-grid" id="r-layer-cards"></div>
     </div>
-    <div class="r-section">
-      <div class="r-eyebrow">The Mirror</div>
-      <h2 class="r-heading">What your answers reveal.</h2>
-      <p class="r-sub">Tap any card to read the full explanation.</p>
-      <div class="mirror-cards" id="r-mirror-cards"></div>
+
     </div>
     <div class="r-section alt">
       <div class="r-eyebrow">Where You Actually Are</div>
@@ -462,11 +451,6 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 <!-- LAYER MODAL -->
 <div class="modal-overlay" id="layerModal" onclick="closeModalOverlay(event,'layerModal')">
   <div class="modal"><div class="modal-handle"></div><div class="modal-title" id="layer-modal-title">—</div><div class="modal-sub" id="layer-modal-sub">—</div><div class="modal-body" id="layer-modal-body"></div><button class="modal-close" onclick="closeModal('layerModal')">Close</button></div>
-</div>
-
-<!-- TYPE MODAL -->
-<div class="modal-overlay" id="typeModal" onclick="closeModalOverlay(event,'typeModal')">
-  <div class="modal"><div class="modal-handle"></div><div class="modal-title" id="type-modal-title">—</div><div class="modal-sub" id="type-modal-sub">—</div><div class="modal-body" id="type-modal-body"></div><button class="modal-close" onclick="closeModal('typeModal')">Close</button></div>
 </div>
 
 <!-- PRIVACY MODAL -->
@@ -719,19 +703,6 @@ function renderResults(){
     wyaEl.appendChild(beat);
   });
 
-  // MIRROR CARDS
-  const mcEl=document.getElementById('r-mirror-cards');mcEl.innerHTML='';
-  Object.entries(DC).forEach(([dk,dcfg])=>{
-    const rawType=dimTypes?.[dk]||'forming';
-    const tk=typeKey(rawType);
-    const td=TD[tk];if(!td)return;
-    const tName=TN(rawType);
-    const card=document.createElement('div');
-    card.className=`m-card dim-${dcfg.layer}`;
-    card.innerHTML=`<div class="m-type" style="color:${dcfg.color}">${dcfg.name}</div><div class="m-title">${tName}</div><div class="m-face">${td.face[0]}<br>${td.face[1]}</div><button class="m-read-more" onclick="openTypeModal('${tk}','${dcfg.name}')">Read more →</button>`;
-    mcEl.appendChild(card);
-  });
-
   buildReviewTab();
 }
 
@@ -742,13 +713,6 @@ function openLayerModal(lk,tk){
   document.getElementById('layer-modal-sub').textContent='You are '+TN(tk);
   document.getElementById('layer-modal-body').innerHTML=`<p><strong>What this layer is about</strong></p><p>${layer.what}</p><p><strong>Why it matters</strong></p><p>${layer.why}</p><p><strong>Your type: ${TN(tk)}</strong></p><p>${td.full}</p>`;
   openModal('layerModal');
-}
-function openTypeModal(tk,dimName){
-  const td=TD[tk];if(!td)return;
-  document.getElementById('type-modal-title').textContent=TN(tk);
-  document.getElementById('type-modal-sub').textContent=dimName;
-  document.getElementById('type-modal-body').innerHTML=`<p>${td.full}</p>`;
-  openModal('typeModal');
 }
 function openModal(id){const el=document.getElementById(id);if(el)el.classList.add('open')}
 function closeModal(id){const el=document.getElementById(id);if(el)el.classList.remove('open')}
