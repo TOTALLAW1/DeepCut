@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -647,7 +648,7 @@ async function processResults(){
   const dimLines=Object.entries(dimTypes).map(([d,t])=>`${DC[d].name}: ${TN(t)}`).join('\n');
   let heading="There's more going on in you than you show.",body='',oneLine='More going on in you than most people see.',dearLetter='';
   try{
-    const params=new URLSearchParams({action:'generate_letter',first_name:S.firstName,grounding_type:TN(layerTypes.grounding),formation_type:TN(layerTypes.formation),wiring_type:TN(layerTypes.wiring),northern_type:TN(layerTypes.northstar),dimension_types:dimLines});
+   const params=new URLSearchParams({action:'generate_letter',first_name:S.firstName,grounding_type:TN(layerTypes.grounding),formation_type:TN(layerTypes.formation),wiring_type:TN(layerTypes.wiring),northern_type:TN(layerTypes.northstar)});
     const res=await fetch(`${SCRIPT_URL}?${params}`);
     const data=await res.json();
     if(data.success){heading=data.heading||heading;body=data.body||'';oneLine=data.one_line||oneLine;dearLetter=data.dear_letter||''}
